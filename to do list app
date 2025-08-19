@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Quote App</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #fdf2f8, #ede9fe, #e0f2fe);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+    }
+    .quote {
+      font-size: 1.2rem;
+      font-style: italic;
+      margin: 15px 0;
+      color: #374151;
+    }
+    button {
+      width: 48%;
+      padding: 12px;
+      margin: 5px 1%;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .share-btn {
+      background: #3b82f6;
+      color: #fff;
+    }
+    .share-btn:hover { background: #2563eb; }
+    .fav-btn {
+      background: #f59e0b;
+      color: #fff;
+    }
+    .fav-btn:hover { background: #d97706; }
+    .favorites {
+      margin-top: 20px;
+      text-align: left;
+    }
+    .favorites h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+    .favorites p {
+      background: #f3f4f6;
+      paddin
