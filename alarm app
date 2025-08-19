@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alarm Clock</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 { margin-bottom: 5px; }
+    #clock {
+      font-size: 40px;
+      font-weight: bold;
+    }
+    #date {
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 20px;
+    }
+    label { font-size: 14px; }
+    input, select, button {
+      margin-top: 5px;
+      margin-bottom: 10px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background: #22d3ee;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.9; }
+    .alarm-list {
+      list-style: none;
+      padding: 0;
+    }
+    .alarm-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+    }
+    .alarm-controls button {
+      margin: 5px;
+      width: auto;
+      padding: 6px 10px;
+    }
+    #ringing {
+      display: none;
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #111;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>⏰ Alarm Clock</h1>
+  <div id="clock">00:00:00</div>
+  <div id="date"></div>
+
+  <!-- Add Alarm -->
+  <div class="card">
+    <h3>Set a New Alarm</h3>
+    <label>Time:</label>
+    <input type="time" id="alarmTime">
+    <label>Choose Tone:</label>
+    <select id="alarmTone">
+      <option value="tone1.mp3">Classic Beep</option>
+      <option value="tone2.mp3">Digital Bell</option>
+      <option value="tone3.mp3">Soft Chime</option>
+    </select>
+    <button onclick="addAlarm()">Add Alarm</button>
+  </div>
+
+  <!-- Alarm List -->
+  <div class="card">
+    <h3>Alarms</h3>
+    <ul class="alarm-list" id="alarmList"></ul>
+  </div>
+
+  <!-- Ringing Popup -->
+  <div id="ringing">
+    <h2>🔔 Alarm Ringing!</h2>
+    <div class="alarm-controls">
+      <button onclick="snoozeAlarm()">Snooze 5 min</button>
+      <button onclick="dismissAlarm()">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- Hidden audio element -->
+  <audio id="alarmAudio" loop></audio>
+
+  <script>
+    const clockEl = document.getElementById("clock");
+    const dateEl = document.getElementById("date");
+    const alarmListEl = document.getElementById("alarmList");
+    const alarmAudio = document.getElementById("alarmAudio");
+    const ringingBox = document.getElementById("ringing");
+
+    let alarms = [];
+    let ringingAlarm = null;
+
+    // Update clock every second
+    setInterval(() => {
+      const now = new Date();
+      clockEl.textContent = now.toLocaleTimeString();
+      dateEl.textContent = now.toDateString();
+      checkAlarms(now);
+    }, 1000);
+
+    function addAlarm() {
+      const time = document.getElementById("alarmTime").value;
+      const tone = document.getElementById("alarmTone").value;
+      if (!time) return alert("Please select a time!");
+
+      const alarm = { time, tone, enabled: true };
+      alarms.push(alarm);
+      renderAlarms();
+    }
+
+    function renderAlarms() {
+      alarmListEl.innerHTML = "";
+      alarms.forEach((alarm, i) => {
+        const li = document.createElement("li");
+        li.className = "alarm-item";
+        li.innerHTML = `
+          ${alarm.time} 
+          <label>
+            <input type="checkbox" ${alarm.enabled ? "checked" : ""} onchange="toggleAlarm(${i})"> On/Off
+          </label>
+          <button onclick="deleteAlarm(${i})">Delete</button>
+        `;
+        alarmListEl.appendChild(li);
+      });
+    }
+
+    function toggleAlarm(i) {
+      alarms[i].enabled = !alarms[i].enabled;
+    }
+
+    function deleteAlarm(i) {
+      alarms.splice(i, 1);
+      renderAlarms();
+    }
+
+    function checkAlarms(now) {
+      const current = now.toTimeString().slice(0,5);
+      alarms.forEach((alarm, i) => {
+        if (alarm.enabled && alarm.time === current && !ringingAlarm) {
+          startRinging(alarm, i);
+        }
+      });
+    }
+
+    function startRinging(alarm, index) {
+      ringingAlarm = { alarm, index };
+      alarmAudio.src = alarm.tone;
+      alarmAudio.play();
+      ringingBox.style.display = "block";
+    }
+
+    function snoozeAlarm() {
+      if (!ringingAlarm) return;
+      const snoozeTime = new Date();
+      snoozeTime.setMinutes(snoozeTime.getMinutes() + 5);
+      alarms[ringingAlarm.index].time = snoozeTime.toTimeString().slice(0,5);
+      stopRinging();
+      renderAlarms();
+      alert("Alarm snoozed for 5 minutes!");
+    }
+
+    function dismissAlarm() {
+      if (!ringingAlarm) return;
+      alarms[ringingAlarm.index].enabled = false;
+      stopRinging();
+      renderAlarms();
+    }
+
+    function stopRinging() {
+      alarmAudio.pause();
+      alarmAudio.currentTime = 0;
+      ringingBox.style.display = "none";
+      ringingAlarm = null;
+    }
+  </script>
+</body>
+</html>
