@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Daily Inspire</title>
+  <style>
+    :root{
+      --bg1:#0ea5e9; /* sky-500 */
+      --bg2:#8b5cf6; /* violet-500 */
+      --card:#0b1020ee;
+      --text:#eef2ff; /* slate-50 */
+      --muted:#cbd5e1; /* slate-300 */
+      --accent:#22d3ee; /* cyan-400 */
+      --good:#10b981; /* emerald-500 */
+      --warn:#f59e0b; /* amber-500 */
+      --danger:#ef4444; /* red-500 */
+      --shadow: 0 20px 30px rgba(0,0,0,.25);
+      --radius: 22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Inter, system-ui, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 80% -10%, rgba(255,255,255,.12), transparent 60%),
+        linear-gradient(170deg, var(--bg1), var(--bg2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: clamp(16px, 3vw, 28px);
+    }
+
+    .app{
+      max-width: 520px;
+      width:100%;
+    }
+
+    .header{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .brand{
+      display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.3px;
+    }
+    .brand .logo{
+      width:36px;height:36px;border-radius:12px;
+      display:grid;place-items:center;background:rgba(255,255,255,.18);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+    .brand .logo svg{transform:translateY(1px)}
+    .chip{
+      font-size:12px;padding:6px 10px;border-radius:999px;
+      background:rgba(255,255,255,.16);color:var(--muted);
+      backdrop-filter: blur(6px);
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      padding: 22px 18px;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .date{
+      font-size:12px;color:var(--muted);margin-bottom:12px;opacity:.9;
+    }
+    .quote{
+      font-size: clamp(20px, 4.6vw, 28px);
+      line-height:1.35;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .author{
+      margin-top:12px;color:var(--muted);font-size:14px;font-weight:600;
+    }
+
+    .actions{
+      display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;
+    }
+    button, .btn{
+      appearance:none;border:none;outline:none;cursor:pointer;
+      background: rgba(255,255,255,.1);
+      color: var(--text);
+      padding:12px 14px;border-radius: 14px;
+      font-weight:700;font-size:14px;
+      display:flex;gap:10px;align-items:center;justify-content:center;
+      transition: transform .08s ease, background .2s ease, opacity .2s ease;
+      backdrop-filter: blur(6px);
+    }
+    button:hover{transform: translateY(-1px)}
+    button:active{transform: translateY(0)}
+    .primary{ background: linear-gradient(135deg, var(--accent), #60a5fa); color:#0b1020; }
+    .success{ background: linear-gradient(135deg, #34d399, #22c55e); color:#062012;}
+    .ghost{ background: rgba(255,255,255,.08); }
+    .danger{ background: linear-gradient(135deg, #fb7185, #ef4444); }
+
+    .toolbar{
+      display:grid;grid-template-columns:1fr 1fr;
+      gap:10px;margin-top:10px;
+    }
+
+    .pill{
+      margin-top:14px;font-size:12px;color:var(--muted);
+      display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    }
+    .pill .dot{
+      width:8px;height:8px;border-radius:99px;background:var(--accent);
+      box-shadow:0 0 18px var(--accent);
+    }
+
+    .favorites{
+      margin-top:16px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      overflow:hidden;
+    }
+    .fav-head{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);
+      color:var(--muted);font-weight:700;
+    }
+    .fav-list{max-height: 300px;overflow:auto;}
+    .fav-item{
+      padding:14px;display:flex;gap:12px;align-items:flex-start;
+      border-bottom:1px dashed rgba(255,255,255,.08);
+    }
+    .fav-item:last-child{border-bottom:none}
+    .fav-text{font-size:14px;line-height:1.4}
+    .fav-author{color:var(--muted);font-size:12px;margin-top:6px}
+    .row-actions{margin-left:auto;display:flex;gap:8px}
+    .empty{
+      padding:18px;text-align:center;color:var(--muted);font-size:14px;
+    }
+
+    .toast{
+      position: fixed;left:50%;bottom:24px;transform:translateX(-50%);
+      background:#111827;color:#f9fafb;border:1px solid rgba(255,255,255,.12);
+      padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;
+      transition:opacity .2s ease, transform .2s ease;
+      box-shadow: var(--shadow);
+      z-index:999;
+    }
+    .toast.show{opacity:1;transform: translateX(-50%) translateY(-6px)}
+    .tiny{font-size:12px;color:var(--muted);margin-left:8px}
+    .footer{margin-top:14px;text-align:center;font-size:12px;color:#e2e8f0aa}
+    a.inline{color:#e2e8f0;text-underline-offset:2px}
+
+    /* Make it comfy on tall phones */
+    @media (min-height:780px){
+      .card{padding:28px 22px}
+      .actions{margin-top:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3l2.09 6.26H21l-5.17 3.76 1.98 6.11L12 15.77l-5.81 3.36 1.98-6.11L3 9.26h6.91L12 3z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>Daily Inspire</div>
+      </div>
+      <div class="chip" id="streakChip">Day Streak: <span id="streak">1</span></div>
+    </div>
+
+    <div class="card" id="quoteCard">
+      <div class="date" id="dateText"></div>
+      <div class="quote" id="quoteText">Loading…</div>
+      <div class="author" id="quoteAuthor"></div>
+
+      <div class="actions">
+        <button class="primary" id="shareBtn" title="Share">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7" stroke="#0b1020" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M12 4v12" stroke="#0b1020" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M7 9l5-5 5 5" stroke="#0b1020" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Share
+        </button>
+        <button class="success" id="favBtn" title="Favorite">
+          <svg id="heartIcon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12.1 20.3s-7.6-4.3-9.3-8.8C1.7 7.1 4.2 4.4 7.3 5c1.8.3 2.9 1.5 3.6 2.8.7-1.3 1.8-2.5 3.6-2.8 3.1-.6 5.6 2.1 4.5 6.5-1.7 4.5-9.3 8.8-9.3 8.8z"
+                  stroke="#062012" stroke-width="1.6" stroke-linejoin="round" fill="rgba(255,255,255,.0)"/>
+          </svg>
+          Favorite
+        </button>
+        <button class="ghost" id="refreshBtn" title="New quote">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M20 12a8 8 0 10-2.34 5.66" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M20 8v4h-4" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Refresh
+          <span class="tiny">(for testing)</span>
+        </button>
+      </div>
+
+      <div class="pill">
+        <div class="dot"></div>
+        <span id="statusText">Quote of the day is locked until midnight.</span>
+      </div>
+    </div>
+
+    <div class="favorites">
+      <div class="fav-head">
+        <div>Favorites</div>
+        <div class="row-actions">
+          <button class="ghost" id="exportBtn" title="Export favorites">Export</button>
+          <button class="danger" id="clearFavsBtn" title="Clear all favorites">Clear All</button>
+        </div>
+      </div>
+      <div class="fav-list" id="favList">
+        <div class="empty">No favorites yet. Tap <strong>Favorite</strong> to save quotes you love.</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Built for mobile · Works offline · Your data stays in your browser.
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---------- Quote data ----------
+    const QUOTES = [
+      {t:"The best way to predict the future is to create it.", a:"Peter Drucker"},
+      {t:"It always seems impossible until it’s done.", a:"Nelson Mandela"},
+      {t:"Do what you can, with what you have, where you are.", a:"Theodore Roosevelt"},
+      {t:"Success is the sum of small efforts, repeated day in and day out.", a:"Robert Collier"},
+      {t:"Your life does not get better by chance, it gets better by change.", a:"Jim Rohn"},
+      {t:"You miss 100% of the shots you don’t take.", a:"Wayne Gretzky"},
+      {t:"Dream big and dare to fail.", a:"Norman Vaughan"},
+      {t:"The only limit to our realization of tomorrow is our doubts of today.", a:"Franklin D. Roosevelt"},
+      {t:"What you get by achieving your goals is not as important as what you become by achieving your goals.", a:"Zig Ziglar"},
+      {t:"If you want to go fast, go alone. If you want to go far, go together.", a:"African Proverb"},
+      {t:"Small steps every day.", a:"Unknown"},
+      {t:"Make it happen. Shock everyone.", a:"Unknown"},
+      {t:"Believe you can and you’re halfway there.", a:"Theodore Roosevelt"},
+      {t:"Action is the foundational key to all success.", a:"Pablo Picasso"},
+      {t:"Don’t watch the clock; do what it does. Keep going.", a:"Sam Levenson"},
+      {t:"The secret of getting ahead is getting started.", a:"Mark Twain"},
+      {t:"We are what we repeatedly do. Excellence, then, is not an act, but a habit.", a:"Will Durant"},
+      {t:"Start where you are. Use what you have. Do what you can.", a:"Arthur Ashe"},
+      {t:"The harder you work for something, the greater you’ll feel when you achieve it.", a:"Unknown"},
+      {t:"Sometimes later becomes never. Do it now.", a:"Unknown"},
+      {t:"Everything you can imagine is real.", a:"Pablo Picasso"},
+      {t:"All progress takes place outside the comfort zone.", a:"Michael John Bobak"},
+      {t:"Quality is not an act, it is a habit.", a:"Aristotle"},
+      {t:"If it matters to you, you’ll find a way.", a:"Charlie Gilkey"},
+      {t:"Discipline equals freedom.", a:"Jocko Willink"},
+      {t:"Focus on the step in front of you, not the whole staircase.", a:"Unknown"},
+      {t:"The journey of a thousand miles begins with one step.", a:"Lao Tzu"},
+      {t:"Be so good they can’t ignore you.", a:"Steve Martin"},
+      {t:"Stay hungry. Stay foolish.", a:"Steve Jobs"},
+      {t:"Turn your wounds into wisdom.", a:"Oprah Winfrey"}
+    ];
+
+    // ---------- Helpers ----------
+    const $ = (sel)=>document.querySelector(sel);
+    const formatDate = (d)=>{
+      return d.toLocaleDateString(undefined, {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    };
+    const todayKey = ()=> new Date().toISOString().slice(0,10); // YYYY-MM-DD
+    const hash = (s)=>{
+      // Tiny string hash for stable daily pick
+      let h = 2166136261;
+      for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h += (h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24); }
+      return Math.abs(h >>> 0);
+    };
+    const showToast = (msg)=>{
+      const el = $('#toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(()=> el.classList.remove('show'), 1600);
+    };
+
+    // ---------- State ----------
+    const LS_KEYS = {
+      CURRENT: 'di_current_quote', // {date, index}
+      FAVS: 'di_favorites',        // [{t,a}]
+      STREAK: 'di_streak',         // {lastDate, count}
+    };
+
+    const getFavs = ()=> JSON.parse(localStorage.getItem(LS_KEYS.FAVS)||'[]');
+    const setFavs = (arr)=> localStorage.setItem(LS_KEYS.FAVS, JSON.stringify(arr));
+
+    function updateStreak(){
+      const today = todayKey();
+      const raw = JSON.parse(localStorage.getItem(LS_KEYS.STREAK)||'{"lastDate":"","count":0}');
+      if(raw.lastDate === today) return raw.count;
+      const last = raw.lastDate;
+      const count = (()=>{
+        if(!last) return 1;
+        const y = new Date(last); const t = new Date(today);
+        const ms = 24*60*60*1000;
+        const days = Math.round((t - y)/ms);
+        if(days === 1) return raw.count + 1;
+        return 1; // reset streak if gap > 1 day
+      })();
+      localStorage.setItem(LS_KEYS.STREAK, JSON.stringify({lastDate: today, count}));
+      return count;
+    }
+
+    function getTodayQuote(forceNew=false){
+      const today = todayKey();
+      let current = JSON.parse(localStorage.getItem(LS_KEYS.CURRENT)||'null');
+
+      if(!current || current.date !== today || forceNew){
+        // Pick a deterministic index from date, but if forceNew, pick a random different one
+        let idx;
+        if(forceNew){
+          const exclude = current && current.date===today ? current.index : -1;
+          do { idx = Math.floor(Math.random()*QUOTES.length);} while(idx===exclude && QUOTES.length>1);
+        } else {
+          idx = hash(today) % QUOTES.length;
+        }
+        current = {date: today, index: idx};
+        localStorage.setItem(LS_KEYS.CURRENT, JSON.stringify(current));
+      }
+      return QUOTES[current.index];
+    }
+
+    function renderQuote(q){
+      $('#quoteText').textContent = “${q.t}”;
+      $('#quoteAuthor').textContent = q.a ? — ${q.a} : '';
+      $('#dateText').textContent = formatDate(new Date());
+      const favs = getFavs();
+      const isFav = favs.some(f=> f.t===q.t && f.a===q.a);
+      toggleHeart(isFav);
+    }
+
+    function toggleHeart(active){
+      const heart = $('#heartIcon');
+      heart.setAttribute('fill', active ? '#51f6b1' : 'rgba(255,255,255,0)');
+      heart.setAttribute('stroke', active ? '#062012' : '#062012');
+    }
+
+    function renderFavs(){
+      const list = $('#favList');
+      const favs = getFavs();
+      if(!favs.length){
+        list.innerHTML = <div class="empty">No favorites yet. Tap <strong>Favorite</strong> to save quotes you love.</div>;
+        return;
+      }
+      list.innerHTML = '';
+      favs.forEach((q,i)=>{
+        const row = document.createElement('div');
+        row.className = 'fav-item';
+        row.innerHTML = `
+          <div class="fav-text">“${q.t}”
+            <div class="fav-author">— ${q.a||'Unknown'}</div>
+          </div>
+          <div class="row-actions">
+            <button class="ghost" data-share="${i}">Share</button>
+            <button class="danger" data-del="${i}">Remove</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+      list.querySelectorAll('button[data-del]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const idx = +btn.getAttribute('data-del');
+          const f = getFavs();
+          f.splice(idx,1); setFavs(f); renderFavs();
+          showToast('Removed from favorites');
+        });
+      });
+      list.querySelectorAll('button[data-share]').forEach(btn=>{
+        btn.addEventListener('click', async ()=>{
+          const idx = +btn.getAttribute('data-share');
+          const q = getFavs()[idx];
+          await shareQuote(q);
+        });
+      });
+    }
+
+    async function shareQuote(q){
+      const text = ${q.t} — ${q.a || 'Unknown'};
+      try{
+        if(navigator.share){
+          await navigator.share({title:'Inspiring Quote', text});
+        }else{
+          await navigator.clipboard.writeText(text);
+          showToast('Copied to clipboard!');
+        }
+      }catch(e){
+        // user dismissed, ignore
+      }
+    }
+
+    // ---------- Events ----------
+    $('#shareBtn').addEventListener('click', ()=> shareQuote(currentQuote));
+    $('#favBtn').addEventListener('click', ()=>{
+      const favs = getFavs();
+      const idx = favs.findIndex(f=> f.t===currentQuote.t && f.a===currentQuote.a);
+      if(idx>-1){ // remove
+        favs.splice(idx,1);
+        setFavs(favs);
+        toggleHeart(false);
+        showToast('Removed from favorites');
+        renderFavs();
+      } else {
+        favs.unshift(currentQuote);
+        setFavs(favs);
+        toggleHeart(true);
+        showToast('Added to favorites');
+        renderFavs();
+      }
+    });
+    $('#refreshBtn').addEventListener('click', ()=>{
+      // Provide a manual refresh (for testing) that picks a new quote but keeps today's date
+      currentQuote = getTodayQuote(true);
+      renderQuote(currentQuote);
+      $('#statusText').textContent = 'You refreshed manually. Daily auto-refresh happens at midnight.';
+    });
+    $('#clearFavsBtn').addEventListener('click', ()=>{
+      if(confirm('Clear all favorite quotes?')){
+        setFavs([]); renderFavs(); showToast('Cleared favorites');
+      }
+    });
+    $('#exportBtn').addEventListener('click', ()=>{
+      const favs = getFavs();
+      if(!favs.length){ showToast('No favorites to export'); return; }
+      const blob = new Blob([JSON.stringify(favs, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = daily-inspire-favorites-${todayKey()}.json;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // ---------- Init ----------
+    let currentQuote = getTodayQuote(false);
+    renderQuote(currentQuote);
+    const streak = updateStreak();
+    $('#streak').textContent = streak;
+    $('#statusText').textContent = 'Quote of the day is locked until midnight.';
+
+    // At midnight local time, refresh automatically
+    function scheduleMidnightRefresh(){
+      const now = new Date();
+      const next = new Date(now);
+      next.setHours(24,0,2,0); // a couple seconds after midnight
+      const ms = next - now;
+      setTimeout(()=>{
+        currentQuote = getTodayQuote(false);
+        renderQuote(currentQuote);
+        $('#statusText').textContent = 'New day, new quote ✨';
+        const s = updateStreak();
+        $('#streak').textContent = s;
+        scheduleMidnightRefresh();
+      }, ms);
+    }
+    scheduleMidnightRefresh();
+
+    // Render initial favorites
+    renderFavs();
+
+    // Little entrance animation
+    (function popCard(){
+      const card = document.getElementById('quoteCard');
+      card.animate([
+        { transform: 'translateY(8px) scale(.98)', opacity: .0 },
+        { transform: 'translateY(0) scale(1)', opacity: 1 }
+      ], { duration: 300, easing: 'ease-out' });
+    })();
+  </script>
+</body>
+</html>
